@@ -5,27 +5,17 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 	"time"
 )
 
-// WaitGroup is used to wait for the program to finish goroutines.
 var wg sync.WaitGroup
+var jsonResponces = make(chan string)
+var quit = make(chan bool, 2)
 
-// channel for storing responses
-var jsonResponses = make(chan string, 3)
-
-// Function to scrape URL
-func reqUrl(url string) {
-	// Schedule the call to WaitGroup's Done to tell goroutine is completed.
+func scrapper(url string) {
 	defer wg.Done()
-
 	res, err := http.Get(url)
-	time.Sleep(3 * time.Second)
-
 	if err != nil {
 		log.Fatal(err)
 	} else {
@@ -34,51 +24,40 @@ func reqUrl(url string) {
 		if err != nil {
 			log.Fatal(err)
 		} else {
-			jsonResponses <- string(body)
+			jsonResponces <- string(body)
 		}
 	}
 }
 
 func main() {
+
 	urls := []string{
-		"http://www.reddit.com/r/funny.json",
+		"http://www.reddit.com/r/aww.json",
 		"http://www.reddit.com/r/funny.json",
 		"http://www.reddit.com/r/programming.json",
 	}
 
-	// Status channel to signal process to stop
-	status := make(chan bool)
-
-	// Handling SIGTERM and SIGINT
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
+	// Starting scrapping
+	fmt.Println("main")
 	go func() {
-		sig := <-sigs
-		fmt.Println("Completing pending operations. Got signal: ", sig)
-		time.Sleep(3 * time.Second)
-		status <- false
-		fmt.Println("Exiting application")
+		for {
+			for _, url := range urls {
+				wg.Add(1)
+				go scrapper(url)
+				time.Sleep(1 * time.Second)
+			}
+		}
 	}()
 
-	status <- true
-	// scrapping till gets a stop signal
-	for <-status {
-		for _, url := range urls {
-			// Adding routines to wait for
-			wg.Add(1)
-			go reqUrl(url)
-			time.Sleep(1 * time.Second)
+	// Printing result
+	go func() {
+		for response := range jsonResponces {
+			fmt.Println(response)
 		}
-		// Adding routines to wait for
-		wg.Add(1)
-		go func() {
-			for response := range jsonResponses {
-				fmt.Println(response)
-			}
-		}()
-		status <- true
-	}
-
+	}()
+	// Waiting to quite the program
+	<-quit
+	// Waiting for all program to complete
 	wg.Wait()
+	fmt.Println(" Program Shutdown...")
 }
