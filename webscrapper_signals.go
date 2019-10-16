@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -33,7 +34,7 @@ func scrapper(url string) {
 
 func interrupt() {
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 	fmt.Println("Clenaing up process. Got signal: ", <-sig)
 	time.Sleep(3 * time.Second)
 	fmt.Println("Quitting the program")
