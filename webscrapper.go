@@ -11,7 +11,6 @@ import (
 
 var wg sync.WaitGroup
 var jsonResponces = make(chan string)
-var quit = make(chan bool, 2)
 
 func scrapper(url string) {
 	defer wg.Done()
@@ -50,13 +49,12 @@ func main() {
 	}()
 
 	// Printing result
+	wg.Add(1)
 	go func() {
 		for response := range jsonResponces {
 			fmt.Println(response)
 		}
 	}()
-	// Waiting to quite the program
-	<-quit
 	// Waiting for all program to complete
 	wg.Wait()
 	fmt.Println(" Program Shutdown...")
