@@ -1,4 +1,10 @@
+# Base os with all dependencies for your app
+# For node eg: FROM node:8
 FROM <runtime>
+# Base directory for your app
 WORKDIR /work
+# Copy the sourcecode
 COPY <sourcecode> .
+# If you've server listner
+EXPOSE <port>
 CMD <start app>
