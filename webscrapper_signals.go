@@ -12,11 +12,11 @@ import (
 	"time"
 )
 
-var wg sync.WaitGroup
 var jsonResponces = make(chan string)
-var quit = make(chan bool, 2)
+var quit = make(chan bool)
+var terminate = make(chan string)
 
-func scrapper(url string) {
+func scrapper(url string, r int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	res, err := http.Get(url)
 	if err != nil {
@@ -30,6 +30,7 @@ func scrapper(url string) {
 			jsonResponces <- string(body)
 		}
 	}
+	fmt.Println("Coroutine completed for thread: ", r)
 }
 
 func interrupt() {
@@ -39,14 +40,15 @@ func interrupt() {
 	time.Sleep(3 * time.Second)
 	fmt.Println("Quitting the program")
 	quit <- true
+	close(quit)
 }
 
 func main() {
 
+	var wg sync.WaitGroup
 	urls := []string{
-		"http://www.reddit.com/r/aww.json",
-		"http://www.reddit.com/r/funny.json",
-		"http://www.reddit.com/r/programming.json",
+		"http://ifconfig.co",
+		"http://ifconfig.co",
 	}
 
 	// Starting signal handler
@@ -54,12 +56,23 @@ func main() {
 
 	// Starting scrapping
 	fmt.Println("main")
+	i := 1
 	go func() {
 		for {
-			for _, url := range urls {
-				wg.Add(1)
-				go scrapper(url)
-				time.Sleep(1 * time.Second)
+			select {
+			case testvar := <-terminate:
+				fmt.Println("Stoppting thread", testvar)
+				return
+			default:
+				for _, url := range urls {
+					fmt.Println("creating thread ", i)
+					// Adding thread to waitgroup
+					wg.Add(1)
+					go scrapper(url, i, &wg)
+					i++
+					// Sleeping 1 sec before calling next scrape
+					time.Sleep(1 * time.Second)
+				}
 			}
 		}
 	}()
@@ -70,8 +83,12 @@ func main() {
 			fmt.Println(response)
 		}
 	}()
-	// Waiting to quite the program
+
+	// Waiting for stop signal
 	<-quit
+	terminate <- "stop"
+	close(terminate)
+
 	// Waiting for all program to complete
 	wg.Wait()
 	fmt.Println(" Program Shutdown...")

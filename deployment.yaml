@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sigterm
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sigterm
+  template:
+    metadata:
+      labels:
+        app: sigterm
+    spec:
+      containers:
+      - name: sigterm
+        image: rjshrjndrn/go-sigterm:v1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        terminationGracePeriodSeconds: 60
