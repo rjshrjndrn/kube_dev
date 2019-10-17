@@ -12,7 +12,9 @@ spec:
     metadata:
       labels:
         app: sigterm
+        version: v1
     spec:
+      terminationGracePeriodSeconds: 60
       containers:
       - name: sigterm
         image: rjshrjndrn/go-sigterm:v1
@@ -20,4 +22,3 @@ spec:
           requests:
             cpu: 100m
             memory: 200Mi
-        terminationGracePeriodSeconds: 60
