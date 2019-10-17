@@ -60,8 +60,7 @@ func main() {
 	go func() {
 		for {
 			select {
-			case testvar := <-terminate:
-				fmt.Println("Stoppting thread", testvar)
+			case <-terminate:
 				return
 			default:
 				for _, url := range urls {
@@ -78,6 +77,7 @@ func main() {
 	}()
 
 	// Printing result
+	// TODO: Have to make it temporary
 	go func() {
 		for response := range jsonResponces {
 			fmt.Println(response)
