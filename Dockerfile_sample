@@ -1,0 +1,4 @@
+FROM <runtime>
+WORKDIR /work
+COPY <sourcecode> .
+CMD <start app>
