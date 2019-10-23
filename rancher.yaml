@@ -3,6 +3,38 @@ kind: Namespace
 metadata:
   name: cattle-system
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rancher
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  # "namespace" omitted since ClusterRoles are not namespaced
+  name: rancher
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+# This role binding allows "jane" to read pods in the "default" namespace.
+kind: ClusterRoleBinding
+metadata:
+  name: rancher
+subjects:
+- kind: ServiceAccount
+  name: rancher
+  namespace: cattle-system
+  apiGroup: ""
+roleRef:
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: rancher
+  apiGroup: ""
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,35 +73,3 @@ spec:
     targetPort: 443
   selector:
     app: rancher
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: rancher
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  # "namespace" omitted since ClusterRoles are not namespaced
-  name: rancher
-rules:
-- apiGroups: ["*"]
-  resources: ["*"]
-  verbs: ["*"]
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-# This role binding allows "jane" to read pods in the "default" namespace.
-kind: ClusterRoleBinding
-metadata:
-  name: rancher
-subjects:
-- kind: ServiceAccount
-  name: rancher
-  namespace: cattle-system
-  apiGroup: ""
-roleRef:
-  kind: ClusterRole #this must be Role or ClusterRole
-  name: rancher
-  apiGroup: ""
