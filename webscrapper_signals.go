@@ -81,6 +81,7 @@ func main() {
 	go func() {
 		for response := range jsonResponces {
 			fmt.Println(response)
+			time.Sleep(1 * time.Second)
 		}
 	}()
 

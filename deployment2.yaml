@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rajesh-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sigterm
+  template:
+    metadata:
+      labels:
+        app: sigterm
+        version: v2
+    spec:
+      containers:
+      - name: sigterm
+        image: rjshrjndrn/go-sigterm:v2
+        resources:
+          requests:
+            cpu: 100m
+            memory: 200Mi
