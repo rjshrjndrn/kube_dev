@@ -4,6 +4,14 @@
 2. Run a image
     `docker run <imagename>`
     
+## Creating a local kube cluster
+
+Prerequisites:
+    1. [Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+    2. [k3d](https://github.com/rancher/k3d/releases/download/v1.3.4/k3d-linux-amd64)
+
+Command: `k3d create --server-arg --no-deploy --server-arg traefik --name demo --image rancher/k3s:v0.8.1`
+    
 ## Shutting down gracefully
 1. Handle sigterm
     1. rjshrjndrn/demo:nosigterm
